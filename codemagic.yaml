@@ -1,0 +1,25 @@
+workflows:
+  android-debug:
+    name: Android Debug
+    max_build_duration: 30
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Generate missing Android project files
+        script: |
+          # Repo-la android/ folder-la manifest mattum irukku, so baaki gradle files-a generate pannrom
+          rm -f android/app/src/main/AndroidManifest.xml
+          flutter create --platforms=android --project-name safetchain --org com.safechain .
+          # SafeChain permissions + app name thirumba serkrom
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i\    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>' android/app/src/main/AndroidManifest.xml
+          sed -i 's/android:label="[^"]*"/android:label="SafeChain"/' android/app/src/main/AndroidManifest.xml
+      - name: Get packages
+        script: flutter pub get
+      - name: Build debug APK
+        script: flutter build apk --debug
+    artifacts:
+      - build/**/outputs/**/*.apk
